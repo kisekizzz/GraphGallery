@@ -50,17 +50,32 @@ def _check_adj_matrix(adj_matrix, copy=False):
     assert adj_matrix.ndim == 2 and adj_matrix.shape[0] == adj_matrix.shape[1]
     return adj_matrix
 
+'''
+def _check_adj_matrix(adj_matrix, copy=False):
+    if sp.isspmatrix(adj_matrix):
+        adj_matrix = adj_matrix.tocsr(
+            copy=False).astype(np.float32, copy=copy)
+    else:
+        raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
+
+    assert adj_matrix.ndim == 2 and adj_matrix.shape[0] == adj_matrix.shape[1]
+    return adj_matrix
+'''
 
 def _check_attr_matrix(attr_matrix, copy=False):
     if sp.isspmatrix(attr_matrix):
         attr_matrix = attr_matrix.toarray().astype(np.float32, copy=False)
     elif isinstance(attr_matrix, np.ndarray):
-        attr_matrix = attr_matrix.astype(np.float32, copy=copy)
+        if False not in [sp.isspmatrix(A) for A in attr_matrix]:
+            for i, A in enumerate(attr_matrix):
+                A = A.toarray().astype(np.float32, copy=False)
+                attr_matrix[i] = A
+        else:
+             attr_matrix = attr_matrix.astype(np.float32, copy=copy)
     else:
         raise ValueError(
             f"Attribute matrix must be a scipy.sparse.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
-
-    assert attr_matrix.ndim == 2
+    assert attr_matrix.ndim in [2,3]
     return attr_matrix
 
 
